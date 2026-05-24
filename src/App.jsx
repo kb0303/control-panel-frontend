@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DeployForm from "./DeployForm.jsx";
 import StatusCard from "./StatusCard.jsx";
-import { fetchAllDeployments } from "./api.js";
+import { fetchAllDeployments, pingBackend } from "./api.js";
 import "./App.css";
 
 // ─── Sidebar nav items — easy to extend with more pages ──────────────────────
@@ -17,6 +17,8 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    pingBackend();
+
     fetchAllDeployments()
       .then((data) => {
         const shaped = data.map((d) => ({

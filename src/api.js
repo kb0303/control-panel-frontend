@@ -1,5 +1,11 @@
 const BASE = `${import.meta.env.VITE_API_URL}/api`;
 
+export async function pingBackend() {
+    try {
+        await fetch(import.meta.env.VITE_API_URL);
+    } catch (_) {}
+}
+
 /**
  * POST /api/deploy
  * Sends the form data to the backend. Returns { deploymentId }.
