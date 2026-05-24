@@ -1,99 +1,13 @@
-// src/DeployForm.jsx
-// Controlled form component for client onboarding.
-// Calls submitDeploy() and passes the returned deploymentId up to the parent.
-
 import React, { useState } from "react";
 import { submitDeploy } from "./api.js";
 
-// ─── Inline Styles ────────────────────────────────────────────────────────────
-// Keeping styles co-located with the component for recruiter clarity.
-// In a larger app you'd use CSS modules or a utility framework.
-const s = {
-    card: {
-        background: "var(--surface)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--radius-lg)",
-        padding: "32px",
-        marginBottom: "24px",
-    },
-    title: {
-        fontFamily: "var(--font-mono)",
-        fontSize: "11px",
-        letterSpacing: "0.12em",
-        color: "var(--text-muted)",
-        textTransform: "uppercase",
-        marginBottom: "24px",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-    },
-    dot: {
-        width: "6px",
-        height: "6px",
-        borderRadius: "50%",
-        background: "var(--accent)",
-        display: "inline-block",
-    },
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "16px",
-        marginBottom: "16px",
-    },
-    fieldFull: { marginBottom: "16px" },
-    label: {
-        display: "block",
-        fontFamily: "var(--font-mono)",
-        fontSize: "11px",
-        color: "var(--text-muted)",
-        marginBottom: "6px",
-        letterSpacing: "0.05em",
-    },
-    input: {
-        width: "100%",
-        background: "var(--surface-2)",
-        border: "1px solid var(--border-2)",
-        borderRadius: "var(--radius)",
-        padding: "10px 12px",
-        color: "var(--text)",
-        fontFamily: "var(--font-mono)",
-        fontSize: "13px",
-        outline: "none",
-        transition: "border-color 0.15s",
-    },
-    button: {
-        width: "100%",
-        padding: "12px",
-        background: "var(--accent)",
-        color: "#fff",
-        border: "none",
-        borderRadius: "var(--radius)",
-        fontFamily: "var(--font-mono)",
-        fontSize: "13px",
-        fontWeight: "600",
-        cursor: "pointer",
-        letterSpacing: "0.05em",
-        transition: "opacity 0.15s",
-    },
-    buttonDisabled: { opacity: 0.5, cursor: "not-allowed" },
-    errorBox: {
-        background: "rgba(239,68,68,0.08)",
-        border: "1px solid rgba(239,68,68,0.3)",
-        borderRadius: "var(--radius)",
-        padding: "10px 14px",
-        color: "var(--red)",
-        fontFamily: "var(--font-mono)",
-        fontSize: "12px",
-        marginTop: "12px",
-    },
-};
+const QUICK_IMAGES = ["nginx:latest"];
 
 export default function DeployForm({ onDeployed }) {
     const [form, setForm] = useState({ clientName: "", domain: "", image: "nginx:latest" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Generic change handler – works for all inputs
     const handleChange = (e) => {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
@@ -103,9 +17,7 @@ export default function DeployForm({ onDeployed }) {
         setLoading(true);
         try {
             const result = await submitDeploy(form);
-            // Pass the new deploymentId to the parent so it can show the status card
             onDeployed(result.deploymentId, form);
-            // Reset form
             setForm({ clientName: "", domain: "", image: "nginx:latest" });
         } catch (err) {
             setError(err.message);
@@ -117,60 +29,276 @@ export default function DeployForm({ onDeployed }) {
     const isValid = form.clientName && form.domain && form.image;
 
     return (
-        <div style={s.card}>
-            <div style={s.title}>
-                <span style={s.dot} />
-                New Client Deployment
-            </div>
-
-            {/* Two-column grid for clientName + domain */}
-            <div style={s.grid}>
-                <div>
-                    <label style={s.label} htmlFor="clientName">CLIENT NAME</label>
-                    <input
-                        style={s.input}
-                        id="clientName"
-                        name="clientName"
-                        placeholder="Acme Corp"
-                        value={form.clientName}
-                        onChange={handleChange}
-                    />
+        <div className="deploy-form" style={s.card}>
+            {/* Card header */}
+            <div className="deploy-form-header" style={s.cardHeader}>
+                <div style={s.cardHeaderLeft}>
+                    <div style={s.headerDot} />
+                    <span className="card-title" style={s.cardTitle}>New Client Deployment</span>
                 </div>
-                <div>
-                    <label style={s.label} htmlFor="domain">DOMAIN</label>
+                <span className="card-hint" style={s.cardHint}>All fields required</span>
+            </div>
+
+            <div className="deploy-form-body" style={s.cardBody}>
+                {/* Row 1 — client name + domain */}
+                <div className="deploy-form-row" style={s.row}>
+                    <div className="field" style={s.field}>
+                        <label className="field-label" style={s.label} htmlFor="clientName">
+                            <span style={s.labelIcon}>◈</span> Client Name
+                        </label>
+                        <input
+                            className="form-input"
+                            style={s.input}
+                            id="clientName"
+                            name="clientName"
+                            placeholder="Acme Corp"
+                            value={form.clientName}
+                            onChange={handleChange}
+                            autoComplete="off"
+                        />
+                    </div>
+                    <div className="field" style={s.field}>
+                        <label className="field-label" style={s.label} htmlFor="domain">
+                            <span style={s.labelIcon}>◎</span> Domain
+                        </label>
+                        <div style={s.inputWrap}>
+                            <span className="input-prefix" style={s.inputPrefix}>https://</span>
+                            <input
+                                className="form-input input-with-prefix"
+                                style={{ ...s.input, paddingLeft: "58px" }}
+                                id="domain"
+                                name="domain"
+                                placeholder="acme.ourplatform.com"
+                                value={form.domain}
+                                onChange={handleChange}
+                                autoComplete="off"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Row 2 — docker image */}
+                <div className="field" style={s.field}>
+                    <label className="field-label" style={s.label} htmlFor="image">
+                        <span style={s.labelIcon}>⬡</span> Docker Image
+                    </label>
                     <input
+                        className="form-input"
                         style={s.input}
-                        id="domain"
-                        name="domain"
-                        placeholder="acme.ourplatform.com"
-                        value={form.domain}
+                        id="image"
+                        name="image"
+                        placeholder="nginx:latest"
+                        value={form.image}
                         onChange={handleChange}
+                        autoComplete="off"
+                        readOnly
                     />
+                    {/* Quick select pills */}
+                    <div className="quick-pills" style={s.quickPills}>
+                        {QUICK_IMAGES.map((img) => (
+                            <button
+                                key={img}
+                                className="quick-pill"
+                                style={{
+                                    ...s.pill,
+                                    ...(form.image === img ? s.pillActive : {}),
+                                }}
+                                onClick={() => setForm((p) => ({ ...p, image: img }))}
+                            >
+                                {img}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Footer — error + submit */}
+                <div className="form-footer" style={s.footer}>
+                    {error && (
+                        <div className="error-box" style={s.errorBox}>
+                            <span style={s.errorIcon}>⚠</span> {error}
+                        </div>
+                    )}
+                    <button
+                        className="deploy-submit-btn"
+                        style={{
+                            ...s.button,
+                            ...(!isValid || loading ? s.buttonDisabled : {}),
+                        }}
+                        onClick={handleSubmit}
+                        disabled={!isValid || loading}
+                    >
+                        {loading ? (
+                            <>
+                                <span style={s.btnSpinner} />
+                                Queuing...
+                            </>
+                        ) : (
+                            <>
+                                <span style={s.btnIcon}>↗</span>
+                                Deploy Client
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
-
-            {/* Full-width docker image input */}
-            <div style={s.fieldFull}>
-                <label style={s.label} htmlFor="image">DOCKER IMAGE</label>
-                <input
-                    style={s.input}
-                    id="image"
-                    name="image"
-                    placeholder="nginx:latest"
-                    value={form.image}
-                    onChange={handleChange}
-                />
-            </div>
-
-            <button
-                style={{ ...s.button, ...(!isValid || loading ? s.buttonDisabled : {}) }}
-                onClick={handleSubmit}
-                disabled={!isValid || loading}
-            >
-                {loading ? "QUEUING..." : "DEPLOY"}
-            </button>
-
-            {error && <div style={s.errorBox}>⚠ {error}</div>}
         </div>
     );
 }
+
+const s = {
+    card: {
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-lg)",
+        overflow: "hidden",
+    },
+    cardHeader: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "14px 20px",
+        borderBottom: "1px solid var(--border)",
+        background: "var(--surface-2)",
+    },
+    cardHeaderLeft: { display: "flex", alignItems: "center", gap: "8px" },
+    headerDot: {
+        width: "8px",
+        height: "8px",
+        borderRadius: "50%",
+        background: "var(--accent)",
+        boxShadow: "0 0 8px var(--accent-glow)",
+        animation: "pulse 2s infinite",
+    },
+    cardTitle: {
+        fontFamily: "var(--font-mono)",
+        fontSize: "11px",
+        letterSpacing: "0.08em",
+        color: "var(--text-dim)",
+        textTransform: "uppercase",
+    },
+    cardHint: {
+        fontFamily: "var(--font-mono)",
+        fontSize: "10px",
+        color: "var(--text-muted)",
+    },
+    cardBody: { padding: "20px" },
+
+    row: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "16px",
+        marginBottom: "16px",
+    },
+    field: { display: "flex", flexDirection: "column", gap: "6px" },
+    label: {
+        fontFamily: "var(--font-mono)",
+        fontSize: "10px",
+        letterSpacing: "0.08em",
+        color: "var(--text-muted)",
+        textTransform: "uppercase",
+        display: "flex",
+        alignItems: "center",
+        gap: "5px",
+    },
+    labelIcon: { fontSize: "11px", color: "var(--accent)", opacity: 0.7 },
+
+    inputWrap: { position: "relative" },
+    inputPrefix: {
+        position: "absolute",
+        left: "10px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "11px",
+        color: "var(--text-muted)",
+        pointerEvents: "none",
+        zIndex: 1,
+    },
+    input: {
+        width: "100%",
+        background: "var(--surface-2)",
+        border: "1px solid var(--border-2)",
+        borderRadius: "var(--radius)",
+        padding: "9px 12px",
+        color: "var(--text)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "12px",
+        outline: "none",
+        transition: "border-color 0.15s, box-shadow 0.15s",
+        boxSizing: "border-box",
+    },
+
+    quickPills: {
+        display: "flex",
+        gap: "6px",
+        flexWrap: "wrap",
+        marginTop: "4px",
+    },
+    pill: {
+        padding: "3px 10px",
+        background: "transparent",
+        border: "1px solid var(--border)",
+        borderRadius: "20px",
+        fontFamily: "var(--font-mono)",
+        fontSize: "10px",
+        color: "var(--text-muted)",
+        cursor: "pointer",
+        transition: "all 0.15s",
+    },
+    pillActive: {
+        background: "var(--accent-glow)",
+        borderColor: "var(--accent)",
+        color: "var(--accent)",
+    },
+
+    footer: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: "20px",
+        gap: "12px",
+    },
+    errorBox: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        background: "var(--red-glow)",
+        border: "1px solid rgba(248,81,73,0.3)",
+        borderRadius: "var(--radius)",
+        padding: "8px 12px",
+        color: "var(--red)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "11px",
+    },
+    errorIcon: { fontSize: "12px" },
+    button: {
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "9px 20px",
+        background: "var(--accent)",
+        color: "#fff",
+        border: "none",
+        borderRadius: "var(--radius)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "12px",
+        fontWeight: "600",
+        cursor: "pointer",
+        letterSpacing: "0.04em",
+        transition: "opacity 0.15s",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+    },
+    buttonDisabled: { opacity: 0.4, cursor: "not-allowed" },
+    btnIcon: { fontSize: "14px" },
+    btnSpinner: {
+        width: "12px",
+        height: "12px",
+        border: "2px solid rgba(255,255,255,0.3)",
+        borderTopColor: "#fff",
+        borderRadius: "50%",
+        animation: "spin 0.6s linear infinite",
+        display: "inline-block",
+    },
+};

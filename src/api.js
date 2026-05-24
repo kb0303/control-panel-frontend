@@ -1,8 +1,4 @@
-// src/api.js
-// Thin wrapper around fetch so all API calls are in one place.
-// If you later add auth headers or a base URL change, you only touch this file.
-
-const BASE = `${import.meta.env.VITE_API_URL}/api`; 
+const BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 /**
  * POST /api/deploy
@@ -40,10 +36,10 @@ export async function fetchStatus(deploymentId) {
 
 
 export async function fetchAllDeployments() {
-  const res = await fetch(`${BASE}/deployments`);
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || "Failed to fetch deployments");
-  }
-  return res.json();
+    const res = await fetch(`${BASE}/deployments`);
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to fetch deployments");
+    }
+    return res.json();
 }
